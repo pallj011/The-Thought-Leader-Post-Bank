@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>The Thought Leader Post Bank</title>
+</head>
+<body>
+<h2 class="sr-only">LinkedIn Thought Leader Post Bank — generate, import, and manage satirical LinkedIn posts with images</h2>
+<style>
+:root{
+  --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+  --font-mono:'SF Mono','Fira Code','Cascadia Code',monospace;
+  --border-radius-lg:8px;
+  --border-radius-md:5px;
+  --color-text-primary:#111827;
+  --color-text-secondary:#6B7280;
+  --color-text-tertiary:#9CA3AF;
+  --color-text-info:#2563EB;
+  --color-text-success:#16A34A;
+  --color-text-warning:#D97706;
+  --color-text-danger:#DC2626;
+  --color-background-primary:#FFFFFF;
+  --color-background-secondary:#F9FAFB;
+  --color-background-info:#EFF6FF;
+  --color-background-success:#F0FDF4;
+  --color-background-warning:#FFFBEB;
+  --color-background-danger:#FEF2F2;
+  --color-border-primary:#D1D5DB;
+  --color-border-secondary:#E5E7EB;
+  --color-border-tertiary:#F3F4F6;
+  --color-border-info:#BFDBFE;
+  --color-border-success:#BBF7D0;
+  --color-border-warning:#FDE68A;
+  --color-border-danger:#FECACA;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --color-text-primary:#F9FAFB;
+    --color-text-secondary:#9CA3AF;
+    --color-text-tertiary:#6B7280;
+    --color-text-info:#60A5FA;
+    --color-text-success:#4ADE80;
+    --color-text-warning:#FBBF24;
+    --color-text-danger:#F87171;
+    --color-background-primary:#111827;
+    --color-background-secondary:#1F2937;
+    --color-background-info:#1E3A5F;
+    --color-background-success:#052E16;
+    --color-background-warning:#431407;
+    --color-background-danger:#450A0A;
+    --color-border-primary:#4B5563;
+    --color-border-secondary:#374151;
+    --color-border-tertiary:#1F2937;
+    --color-border-info:#1D4ED8;
+    --color-border-success:#166534;
+    --color-border-warning:#92400E;
+    --color-border-danger:#991B1B;
+  }
+}
+body{background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans);min-height:100vh;padding:0 1rem}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+button{font-family:var(--font-sans);font-size:13px;padding:.35rem .75rem;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);cursor:pointer;transition:all .15s;white-space:nowrap}
+button:hover:not(:disabled){border-color:var(--color-border-primary);filter:brightness(.97)}
+button:disabled{opacity:.5;cursor:not-allowed}
+select,input[type=text],input[type=password],textarea{font-family:var(--font-sans);font-size:13px;padding:.35rem .6rem;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);width:100%;outline:none;box-sizing:border-box}
+select:focus,input:focus,textarea:focus{border-color:var(--color-border-info);box-shadow:0 0 0 3px var(--color-background-info)}
+textarea{resize:vertical}
+*{box-sizing:border-box;margin:0;padding:0}
+.app{padding:1.5rem 0;font-family:var(--font-sans)}
+.hdr{text-align:center;margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.hdr-eye{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--color-text-tertiary);margin-bottom:.5rem}
+.hdr h1{font-size:22px;font-weight:500;color:var(--color-text-primary);line-height:1.2}
+.hdr h1 em{font-style:italic;color:var(--color-text-info)}
+.hdr-sub{font-size:13px;color:var(--color-text-secondary);margin-top:.35rem}
+
+.tabs{display:flex;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:1.25rem;gap:0}
+.tab{padding:.6rem 1rem;font-size:13px;font-weight:400;color:var(--color-text-secondary);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:var(--font-sans);transition:color .15s,border-color .15s;display:flex;align-items:center;gap:6px}
+.tab:hover{color:var(--color-text-primary)}
+.tab.active{color:var(--color-text-info);border-bottom-color:var(--color-text-info);font-weight:500}
+.badge{display:inline-flex;align-items:center;justify-content:center;background:var(--color-background-info);color:var(--color-text-info);border-radius:10px;font-size:11px;font-weight:500;min-width:18px;height:18px;padding:0 5px}
+
+.pane{display:none}.pane.active{display:block}
+
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem}
+.card+.card{margin-top:.75rem}
+
+.field-row{display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap;margin-bottom:.75rem}
+.field{flex:1;min-width:140px}
+.field label{display:block;font-size:12px;color:var(--color-text-secondary);margin-bottom:.3rem;font-weight:500}
+
+.chips{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.1rem}
+.chip{padding:.22rem .65rem;border:0.5px solid var(--color-border-secondary);border-radius:20px;font-size:12px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);font-family:var(--font-sans);transition:all .12s}
+.chip:hover{border-color:var(--color-border-primary);color:var(--color-text-primary)}
+.chip.on{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info)}
+
+.sec-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-tertiary);margin-bottom:.65rem;display:flex;align-items:center;gap:.5rem}
+.sec-label::after{content:'';flex:1;height:0.5px;background:var(--color-border-tertiary)}
+
+.titles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.6rem;margin-bottom:1.25rem}
+.tc{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:.85rem;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.tc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--color-border-tertiary);border-radius:3px 0 0 3px;transition:background .15s}
+.tc:hover{border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
+.tc:hover::before{background:var(--color-border-secondary)}
+.tc.sel{border-color:var(--color-border-info);background:var(--color-background-info)}
+.tc.sel::before{background:var(--color-text-info)}
+.tc.imp::before{background:var(--color-text-warning)}
+.tc.imp{border-color:var(--color-border-warning)}
+.tc-hook{font-size:13px;font-weight:500;line-height:1.45;margin-bottom:.3rem;color:var(--color-text-primary)}
+.tc-lesson{font-size:12px;color:var(--color-text-secondary);font-style:italic}
+.imp-tag{display:inline-block;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-warning);background:var(--color-background-warning);border-radius:4px;padding:.1rem .35rem;margin-bottom:.3rem}
+
+.gen-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:580px){.gen-grid{grid-template-columns:1fr}}
+
+.post-out{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.post-hdr{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.post-hdr-l{display:flex;align-items:center;gap:.5rem}
+.av{width:34px;height:34px;border-radius:50%;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--color-text-info);flex-shrink:0;border:0.5px solid var(--color-border-info)}
+.av-name{font-weight:500;font-size:13px;color:var(--color-text-primary)}
+.av-title{font-size:11px;color:var(--color-text-secondary)}
+.li-badge{background:var(--color-background-info);color:var(--color-text-info);font-size:11px;font-weight:500;padding:.15rem .4rem;border-radius:4px}
+.post-body{padding:1rem;min-height:90px;font-size:13px;line-height:1.75;white-space:pre-wrap;color:var(--color-text-primary)}
+.ph{color:var(--color-text-tertiary);font-style:italic;font-size:13px}
+.cur{display:inline-block;width:2px;height:.95em;background:var(--color-text-info);animation:blink .7s infinite;vertical-align:text-bottom;margin-left:1px}
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+.post-actions{display:flex;gap:.4rem;padding:.65rem 1rem;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);flex-wrap:wrap;align-items:center}
+.stat{font-size:11px;color:var(--color-text-tertiary);margin-left:auto}
+
+.img-panel{display:flex;flex-direction:column;gap:.75rem}
+.img-hdr{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:.8rem 1rem}
+.img-hdr strong{display:block;font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:.2rem}
+.img-hdr p{font-size:12px;color:var(--color-text-secondary)}
+.img-hdr a{color:var(--color-text-info);text-decoration:none}
+.imgs-grid{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
+.ic{position:relative;border-radius:var(--border-radius-md);overflow:hidden;border:0.5px solid var(--color-border-tertiary);cursor:pointer;transition:all .15s;aspect-ratio:4/3;background:var(--color-background-secondary)}
+.ic img{width:100%;height:100%;object-fit:cover;display:block}
+.ic:hover{border-color:var(--color-border-secondary);transform:scale(1.01)}
+.ic.sel{border:2px solid var(--color-border-info)}
+.ic-chk{position:absolute;top:5px;right:5px;width:20px;height:20px;background:var(--color-background-info);border-radius:50%;display:none;align-items:center;justify-content:center;color:var(--color-text-info);font-size:11px;font-weight:700}
+.ic.sel .ic-chk{display:flex}
+.ic-credit{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);color:rgba(255,255,255,.85);font-size:10px;padding:2px 6px;text-align:right}
+.img-load{display:flex;align-items:center;justify-content:center;height:90px;color:var(--color-text-tertiary);font-size:13px;gap:.35rem}
+
+.imp-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem}
+@media(max-width:560px){.imp-grid{grid-template-columns:1fr}}
+.imp-box h3{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:.3rem}
+.imp-box p{font-size:12px;color:var(--color-text-secondary);margin-bottom:.75rem;line-height:1.55}
+
+.fmt{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:.65rem .85rem;font-size:12px;color:var(--color-text-secondary);margin-bottom:.75rem;line-height:1.7}
+.fmt strong{color:var(--color-text-primary);font-weight:500}
+code{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:4px;padding:.05rem .3rem;font-family:var(--font-mono);font-size:11px;color:var(--color-text-primary)}
+
+.man-row{display:flex;gap:.5rem;margin-bottom:.6rem}
+.man-row input{flex:1}
+
+.dropzone{border:1px dashed var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:1.5rem;text-align:center;cursor:pointer;transition:all .15s;background:var(--color-background-secondary);margin-bottom:.65rem}
+.dropzone:hover,.dropzone.drag-over{border-color:var(--color-border-info);background:var(--color-background-info)}
+.dropzone-ico{font-size:22px;margin-bottom:.4rem}
+.dropzone strong{font-size:13px;color:var(--color-text-primary)}
+.dropzone p{font-size:12px;color:var(--color-text-secondary);margin-top:.2rem}
+
+.qi{display:flex;align-items:flex-start;gap:.5rem;padding:.5rem .75rem;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:.35rem;font-size:12px}
+.qi-txt{flex:1;line-height:1.45;color:var(--color-text-primary)}
+.qi-rm{cursor:pointer;color:var(--color-text-danger);font-size:13px;flex-shrink:0;padding:.05rem .2rem;border:none;background:none;font-family:var(--font-sans);line-height:1}
+.qi-rm:hover{background:var(--color-background-danger);border-radius:4px}
+.qtag{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;background:var(--color-background-warning);color:var(--color-text-warning);border-radius:3px;padding:.1rem .3rem;margin-right:.3rem}
+
+.bk-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;display:grid;grid-template-columns:120px 1fr}
+@media(max-width:480px){.bk-card{grid-template-columns:1fr}}
+.bk-card+.bk-card{margin-top:.75rem}
+.bk-img{background:var(--color-background-secondary);min-height:100px;position:relative}
+.bk-img img{width:100%;height:100%;object-fit:cover;display:block}
+.bk-img .no-img{display:flex;align-items:center;justify-content:center;height:100%;color:var(--color-text-tertiary);font-size:20px}
+.bk-body{padding:.85rem 1rem;display:flex;flex-direction:column;gap:.4rem}
+.bk-hook{font-size:13px;font-weight:500;line-height:1.4;color:var(--color-text-primary)}
+.bk-prev{font-size:12px;color:var(--color-text-secondary);line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.bk-meta{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:auto}
+.mc{font-size:11px;padding:.12rem .45rem;border-radius:10px;background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary)}
+.bk-acts{display:flex;gap:.35rem;padding:.55rem 1rem;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+
+.exp-bar{display:flex;gap:.5rem;align-items:center;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:.7rem 1rem;margin-bottom:1rem;flex-wrap:wrap}
+.exp-bar span{font-size:13px;color:var(--color-text-secondary);margin-right:auto}
+
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--color-text-secondary)}
+.empty-ico{font-size:24px;margin-bottom:.65rem;color:var(--color-text-tertiary)}
+.empty p{font-size:13px;line-height:1.6}
+
+.dots span{display:inline-block;animation:bounce 1.2s infinite;color:var(--color-text-tertiary)}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+
+.toast{position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%) translateY(8px);background:var(--color-text-primary);color:var(--color-background-primary);padding:.45rem 1rem;border-radius:var(--border-radius-md);font-size:13px;z-index:999;opacity:0;transition:all .22s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.q-bar{display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap;align-items:center}
+.q-bar span{font-size:13px;color:var(--color-text-secondary)}
+</style>
+
+<div class="app">
+  <div class="hdr">
+    <div class="hdr-eye">Content Pipeline</div>
+    <h1>The <em>Thought Leader</em> Post Bank</h1>
+    <p class="hdr-sub">Generate · Import · Curate · Export</p>
+    <div style="margin-top:.75rem;display:flex;align-items:center;gap:.5rem;justify-content:center;flex-wrap:wrap">
+      <input type="password" id="api-key-input" placeholder="Paste Anthropic API key…" style="font-size:12px;padding:.3rem .6rem;width:260px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-mono)" />
+      <button onclick="saveKey()" style="font-size:12px;padding:.3rem .75rem">Save key</button>
+      <span id="key-status" style="font-size:11px;color:var(--color-text-tertiary)"></span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('generate')">Generate</button>
+    <button class="tab" onclick="switchTab('import')">Import <span class="badge" id="qc">0</span></button>
+    <button class="tab" onclick="switchTab('bank')">Bank <span class="badge" id="bc">0</span></button>
+  </div>
+
+  <!-- GENERATE -->
+  <div class="pane active" id="pane-generate">
+    <div class="card">
+      <div class="field-row">
+        <div class="field">
+          <label>Category</label>
+          <select id="category">
+            <option value="general">General hustle & growth</option>
+            <option value="platform">Platform engineering</option>
+            <option value="security">Cybersecurity / DevSecOps</option>
+            <option value="ai">AI/ML & LLMs</option>
+            <option value="leadership">Leadership & management</option>
+            <option value="startup">Startup / founder brain</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tone</label>
+          <select id="tone-select">
+            <option value="satirical">Satirical LinkedIn</option>
+            <option value="sincere">Painfully sincere</option>
+            <option value="techbro">Peak tech bro</option>
+            <option value="divorced">Divorced man energy</option>
+            <option value="corporate">Max corporate jargon</option>
+          </select>
+        </div>
+        <button id="gen-btn" onclick="generateTitles()">Generate titles</button>
+      </div>
+      <div class="chips" id="tone-chips">
+        <span class="chip on" data-tone="satirical">Satirical</span>
+        <span class="chip" data-tone="sincere">Painfully sincere</span>
+        <span class="chip" data-tone="techbro">Tech bro</span>
+        <span class="chip" data-tone="divorced">Divorced man energy</span>
+        <span class="chip" data-tone="corporate">Corporate jargon</span>
+      </div>
+    </div>
+
+    <div id="titles-section" style="display:none;margin-top:1.25rem">
+      <div class="sec-label">Select a hook to expand</div>
+      <div class="titles-grid" id="titles-grid"></div>
+    </div>
+
+    <div id="gen-area" style="display:none">
+      <div class="sec-label">Preview + image</div>
+      <div class="gen-grid">
+        <div>
+          <div class="post-out">
+            <div class="post-hdr">
+              <div class="post-hdr-l">
+                <div class="av">JP</div>
+                <div>
+                  <div class="av-name">John Palli</div>
+                  <div class="av-title">Senior platform engineer · AI/ML infrastructure</div>
+                </div>
+              </div>
+              <span class="li-badge">in</span>
+            </div>
+            <div class="post-body" id="post-body"><span class="ph">Select a title above…</span></div>
+            <div class="post-actions">
+              <button onclick="copyPost()">Copy</button>
+              <button onclick="regenPost()">Regenerate</button>
+              <button onclick="saveToBank()" style="background:var(--color-background-success);color:var(--color-text-success);border-color:var(--color-border-success)">Save to bank</button>
+              <span class="stat" id="stat"></span>
+            </div>
+          </div>
+        </div>
+        <div class="img-panel">
+          <div class="img-hdr">
+            <strong>Free images</strong>
+            <p>Via <a href="https://unsplash.com" target="_blank">Unsplash</a> — free for commercial use. Select one to bundle.</p>
+          </div>
+          <div id="imgs-wrap"><div class="img-load"><span class="dots"><span>.</span><span>.</span><span>.</span></span> Select a title</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMPORT -->
+  <div class="pane" id="pane-import">
+    <div class="imp-grid">
+      <div class="card imp-box">
+        <h3>Manual entry</h3>
+        <p>Type or paste topics, headlines, or hook ideas. One per line or use the pipe format.</p>
+        <div class="fmt">
+          <strong>Supported formats</strong><br>
+          Plain: <code>Kubernetes upgrade disaster</code><br>
+          With lesson: <code>Kubernetes disaster | blast radius management</code><br>
+          Full hook: <code>I clicked Helm upgrade and lost 43 days | why small changes aren't small</code>
+        </div>
+        <div class="man-row">
+          <input type="text" id="man-in" placeholder="e.g. I got locked out of GovCloud at 2am…" onkeydown="if(event.key==='Enter')addManual()" />
+          <button onclick="addManual()">Add</button>
+        </div>
+        <textarea id="bulk-in" placeholder="Paste multiple topics here, one per line…" rows="5" style="margin-bottom:.5rem"></textarea>
+        <div style="display:flex;gap:.5rem">
+          <button onclick="addBulk()" style="flex:1">Add all lines</button>
+          <button onclick="document.getElementById('bulk-in').value=''">Clear</button>
+        </div>
+      </div>
+
+      <div class="card imp-box">
+        <h3>File import</h3>
+        <p>Import from <strong>.txt</strong>, <strong>.csv</strong>, or <strong>.json</strong>. JSON can be a full bank export for round-tripping.</p>
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('file-in').click()" ondragover="dov(event)" ondragleave="dlv()" ondrop="ddr(event)">
+          <div class="dropzone-ico">📁</div>
+          <strong>Click to browse or drag & drop</strong>
+          <p>TXT · CSV · JSON supported</p>
+        </div>
+        <input type="file" id="file-in" accept=".txt,.csv,.json" style="display:none" onchange="handleFile(event)" />
+        <div class="fmt">
+          <strong>.txt</strong> — one topic per line<br>
+          <strong>.csv</strong> — columns: <code>hook</code>, <code>lesson</code> (optional: <code>category</code>, <code>tone</code>)<br>
+          <strong>.json</strong> — array of <code>{"hook":"…","lesson":"…"}</code> or full bank export
+        </div>
+        <button onclick="dlTemplate()" style="width:100%">Download CSV template</button>
+      </div>
+    </div>
+
+    <div id="queue-section" style="display:none">
+      <div class="sec-label">Import queue</div>
+      <div class="q-bar">
+        <span id="q-summary">0 topics queued</span>
+        <button onclick="buildFromQueue()" id="build-btn" style="background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info);margin-left:auto">Build posts from queue</button>
+        <button onclick="clearQueue()" style="color:var(--color-text-danger);border-color:var(--color-border-danger)">Clear queue</button>
+      </div>
+      <div id="queue-list"></div>
+    </div>
+  </div>
+
+  <!-- BANK -->
+  <div class="pane" id="pane-bank">
+    <div class="exp-bar">
+      <span id="bk-summary">0 posts saved</span>
+      <button onclick="exportJSON()">Export JSON</button>
+      <button onclick="exportCSV()">Export CSV</button>
+      <button onclick="clearBank()" style="color:var(--color-text-danger);border-color:var(--color-border-danger)">Clear all</button>
+    </div>
+    <div id="bank-grid">
+      <div class="empty"><div class="empty-ico">📭</div><p>No posts saved yet.<br>Generate or import posts and hit <strong>Save to bank</strong>.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let selTitle=null,selLesson=null,curTone='satirical';
+let postText='',selImgUrl=null,selImgCredit=null;
+let busy=false,importQ=[];
+let bank=JSON.parse(localStorage.getItem('lpb')||'[]');
+
+function saveKey(){
+  const k=document.getElementById('api-key-input').value.trim();
+  if(!k){toast('Paste your API key first');return;}
+  localStorage.setItem('lpb_key',k);
+  document.getElementById('api-key-input').value='';
+  showKeyStatus();
+  toast('API key saved');
+}
+function getKey(){return localStorage.getItem('lpb_key')||'';}
+function showKeyStatus(){
+  const k=getKey();
+  const el=document.getElementById('key-status');
+  el.textContent=k?`Key set (…${k.slice(-4)})`:'No key set';
+  el.style.color=k?'var(--color-text-success)':'var(--color-text-danger)';
+}
+showKeyStatus();
+
+function toast(m,d=2400){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d)}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(x=>x.classList.remove('active'));
+  document.getElementById('pane-'+t).classList.add('active');
+  document.querySelector(`.tab[onclick="switchTab('${t}')"]`).classList.add('active');
+  if(t==='bank')renderBank();
+}
+
+document.querySelectorAll('.chip').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on');curTone=c.dataset.tone;
+    document.getElementById('tone-select').value=curTone;
+  });
+});
+document.getElementById('tone-select').addEventListener('change',e=>{
+  curTone=e.target.value;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.tone===curTone));
+});
+
+const CATS={
+  general:"absurd life/business events twisted into professional insights",
+  platform:"platform engineering, Kubernetes, CI/CD, Terraform, DevOps disasters",
+  security:"cybersecurity, DevSecOps, IAM, compliance theater, InfoSec chaos",
+  ai:"AI/ML failures, LLM shenanigans, prompt engineering disasters, MLOps chaos",
+  leadership:"management disasters, team dynamics, leadership failures, corporate absurdity",
+  startup:"startup founder delusions, VC culture, pivots, burn rate, hustle culture"
+};
+const TONES={
+  satirical:"satirical LinkedIn voice — earnest on the surface, absurd at its core, treating ridiculous events with total professional gravity",
+  sincere:"painfully sincere LinkedIn voice — oversharing vulnerable personal details while connecting them to professional growth",
+  techbro:"peak tech bro voice — excessive jargon, move fast, disruption framing, casual arrogance, metrics and scale",
+  divorced:"recently divorced man LinkedIn voice — stoic, slightly wounded, finding business wisdom in personal loss, unnervingly calm",
+  corporate:"maximum corporate jargon — synergies, stakeholders, value propositions, leverage, bandwidth, circle back — every sentence"
+};
+const IMGS={
+  general:['professional office','business meeting','corporate hallway','person thinking'],
+  platform:['server room','data center','cloud computing','developer laptop'],
+  security:['cybersecurity','network security','technology abstract','lock security'],
+  ai:['artificial intelligence','neural network','robot technology','machine learning abstract'],
+  leadership:['team meeting','boardroom','corporate strategy','business team'],
+  startup:['startup office','whiteboard brainstorm','entrepreneur','coworking space']
+};
+
+async function api(prompt,max=1200){
+  const key=getKey();
+  if(!key){toast('Add your Anthropic API key above first',3000);throw new Error('no key');}
+  const r=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "x-api-key":key,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:max,messages:[{role:"user",content:prompt}]})
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||`HTTP ${r.status}`);}
+  const d=await r.json();
+  return d.content.map(b=>b.text||'').join('');
+}
+
+async function generateTitles(){
+  if(busy)return;busy=true;
+  const btn=document.getElementById('gen-btn');
+  btn.disabled=true;btn.textContent='Generating…';
+  const cat=document.getElementById('category').value;
+  try{
+    const txt=await api(`Generate 6 satirical LinkedIn post hooks. Category: ${CATS[cat]}. Tone: ${TONES[curTone]}.
+Each: wildly absurd premise + "Here's what it taught me about [lesson]"
+Return ONLY valid JSON array, no markdown:
+[{"hook":"...","lesson":"Here's what it taught me about X"}]`,1000);
+    const titles=JSON.parse(txt.replace(/\`\`\`json|\`\`\`/g,'').trim());
+    renderTitles(titles);
+  }catch(e){toast('Error: '+(e.message||'generating titles'),3500);}
+  btn.disabled=false;btn.textContent='Generate titles';busy=false;
+}
+
+function renderTitles(titles,fromImport=false){
+  const grid=document.getElementById('titles-grid');grid.innerHTML='';
+  document.getElementById('titles-section').style.display='block';
+  document.getElementById('gen-area').style.display='none';
+  selTitle=null;selLesson=null;postText='';selImgUrl=null;
+  titles.forEach(t=>{
+    const c=document.createElement('div');
+    c.className='tc'+(fromImport?' imp':'');
+    c.innerHTML=`${fromImport?'<div class="imp-tag">Imported</div>':''}<div class="tc-hook">${t.hook}</div><div class="tc-lesson">${t.lesson||'Expand into a full post'}</div>`;
+    c.addEventListener('click',()=>{
+      document.querySelectorAll('.tc').forEach(x=>x.classList.remove('sel'));
+      c.classList.add('sel');selTitle=t.hook;selLesson=t.lesson||'';selImgUrl=null;
+      document.getElementById('gen-area').style.display='block';
+      generatePost();loadImgs();
+    });
+    grid.appendChild(c);
+  });
+  if(fromImport)switchTab('generate');
+}
+
+async function generatePost(){
+  const body=document.getElementById('post-body');
+  body.innerHTML='<span class="dots"><span>.</span><span>.</span><span>.</span></span>';
+  document.getElementById('stat').textContent='';postText='';
+  const lessonLine=selLesson?`Lesson: "${selLesson}"`:'Generate an appropriate professional lesson.';
+  const prompt=`Write a complete LinkedIn post in ${TONES[curTone]}.
+Hook: "${selTitle}"
+${lessonLine}
+Structure:
+- Open with hook (1-2 punchy lines)
+- Confident setup line ending in disaster ("I had whispered 'this should be fine'…")
+- 3-5 escalating diary/timeline entries (Day 7: / Day 18: / etc.) with absurdist detail treated with complete professional gravity
+- Pivot: "Here's what it taught me about [lesson]:"
+- 4-5 numbered takeaways with bold title + 1-2 lines of hard-won survivor wisdom
+- One haunted deadpan closing line
+- 6-8 hashtags (mix real + 1-2 slightly absurd)
+Total 250-400 words. Write ONLY the post, no commentary.`;
+  try{
+    postText=await api(prompt);
+    body.textContent='';
+    await typewrite(body,postText);
+    document.getElementById('stat').textContent=postText.length+' chars';
+  }catch(e){body.textContent='Error generating post.';}
+}
+
+async function typewrite(el,text){
+  const cur=document.createElement('span');cur.className='cur';
+  for(let i=0;i<=text.length;i++){
+    el.textContent=text.slice(0,i);el.appendChild(cur);
+    if(i%4===0)await new Promise(r=>setTimeout(r,6));
+  }
+  cur.remove();el.textContent=text;
+}
+
+async function regenPost(){if(selTitle)await generatePost();}
+function copyPost(){
+  if(!postText)return;
+  navigator.clipboard.writeText(postText).then(()=>toast('Post copied to clipboard'));
+}
+
+function loadImgs(){
+  const wrap=document.getElementById('imgs-wrap');
+  wrap.innerHTML='<div class="img-load"><span class="dots"><span>.</span><span>.</span><span>.</span></span></div>';
+  const cat=document.getElementById('category').value;
+  const seeds=[...IMGS[cat]].sort(()=>Math.random()-.5).slice(0,4);
+  // source.unsplash.com is deprecated; using picsum.photos with stable seeds per category+keyword
+  const imgs=seeds.map((kw,i)=>{
+    const seed=Math.abs(kw.split('').reduce((a,c)=>a+c.charCodeAt(0),0))+(i*37);
+    return {url:`https://picsum.photos/seed/${seed}/600/450`,kw};
+  });
+  wrap.innerHTML='<div class="imgs-grid" id="imgs-grid"></div>';
+  const grid=document.getElementById('imgs-grid');
+  imgs.forEach(img=>{
+    const c=document.createElement('div');c.className='ic';
+    c.innerHTML=`<img src="${img.url}" alt="${img.kw}" loading="lazy"/><div class="ic-chk">✓</div><div class="ic-credit">Picsum</div>`;
+    c.addEventListener('click',()=>{
+      document.querySelectorAll('.ic').forEach(x=>x.classList.remove('sel'));
+      c.classList.add('sel');
+      selImgUrl=c.querySelector('img').currentSrc||c.querySelector('img').src;
+      selImgCredit='Picsum Photos';
+    });
+    grid.appendChild(c);
+  });
+}
+
+function saveToBank(){
+  if(!postText){toast('Generate a post first');return;}
+  bank.unshift({id:Date.now(),hook:selTitle,lesson:selLesson,post:postText,imageUrl:selImgUrl,imageCredit:selImgCredit,category:document.getElementById('category').value,tone:curTone,savedAt:new Date().toISOString()});
+  localStorage.setItem('lpb',JSON.stringify(bank));
+  updCounts();toast('Saved to post bank');
+}
+function updCounts(){
+  document.getElementById('bc').textContent=bank.length;
+  document.getElementById('bk-summary').textContent=`${bank.length} post${bank.length!==1?'s':''} saved`;
+}
+
+function parseLine(l){
+  l=l.trim();if(!l)return null;
+  if(l.includes('|')){const[h,...r]=l.split('|');return{hook:h.trim(),lesson:r.join('|').trim()};}
+  return{hook:l,lesson:''};
+}
+function addToQ(item){if(!importQ.find(q=>q.hook===item.hook))importQ.push(item);}
+function addManual(){
+  const el=document.getElementById('man-in');const v=el.value.trim();if(!v)return;
+  const item=parseLine(v);if(item){addToQ(item);el.value='';updQ();}
+}
+function addBulk(){
+  const ta=document.getElementById('bulk-in');
+  const lines=ta.value.split('\n').filter(l=>l.trim());
+  let n=0;lines.forEach(l=>{const i=parseLine(l);if(i){addToQ(i);n++;}});
+  ta.value='';if(n)toast(`Added ${n} topic${n>1?'s':''} to queue`);updQ();
+}
+function removeFromQ(i){importQ.splice(i,1);updQ();}
+function clearQueue(){importQ=[];updQ();toast('Queue cleared');}
+function updQ(){
+  const n=importQ.length;
+  document.getElementById('qc').textContent=n;
+  document.getElementById('q-summary').textContent=`${n} topic${n!==1?'s':''} queued`;
+  const sec=document.getElementById('queue-section');sec.style.display=n>0?'block':'none';
+  const list=document.getElementById('queue-list');list.innerHTML='';
+  importQ.forEach((item,i)=>{
+    const d=document.createElement('div');d.className='qi';
+    d.innerHTML=`<div class="qi-txt"><span class="qtag">${item.lesson?'hook+lesson':'topic'}</span><strong>${item.hook}</strong>${item.lesson?`<br><span style="color:var(--color-text-secondary);font-style:italic">${item.lesson}</span>`:''}</div><button class="qi-rm" onclick="removeFromQ(${i})">✕</button>`;
+    list.appendChild(d);
+  });
+}
+
+async function buildFromQueue(){
+  if(!importQ.length){toast('Queue is empty');return;}
+  const btn=document.getElementById('build-btn');btn.disabled=true;btn.textContent='Building…';
+  const need=importQ.filter(i=>!i.lesson);
+  if(need.length>0){
+    try{
+      const txt=await api(`For each topic, generate a punchy "Here's what it taught me about X" lesson in absurdist LinkedIn thought leadership style.
+Return ONLY valid JSON array:
+${JSON.stringify(need.map(i=>i.hook))}
+Format: [{"hook":"original","lesson":"Here's what it taught me about X"}]`,800);
+      const enriched=JSON.parse(txt.replace(/\`\`\`json|\`\`\`/g,'').trim());
+      enriched.forEach(e=>{const f=importQ.find(q=>q.hook===e.hook);if(f)f.lesson=e.lesson;});
+    }catch(e){}
+  }
+  renderTitles([...importQ],true);
+  const n=importQ.length;importQ=[];updQ();
+  btn.disabled=false;btn.textContent='Build posts from queue';
+  toast(`${n} topic${n!==1?'s':''} sent to Generate tab`);
+}
+
+function dov(e){e.preventDefault();document.getElementById('dropzone').classList.add('drag-over');}
+function dlv(){document.getElementById('dropzone').classList.remove('drag-over');}
+function ddr(e){e.preventDefault();dlv();const f=e.dataTransfer.files[0];if(f)processFile(f);}
+function handleFile(e){const f=e.target.files[0];if(f)processFile(f);e.target.value='';}
+
+function processFile(file){
+  const ext=file.name.split('.').pop().toLowerCase();
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const content=e.target.result;
+    try{
+      if(ext==='json'){
+        const data=JSON.parse(content);const items=Array.isArray(data)?data:[];
+        let n=0;items.forEach(item=>{const hook=item.hook||item.topic||item.title||'';const lesson=item.lesson||'';if(hook){addToQ({hook,lesson});n++;}});
+        toast(`Imported ${n} items from JSON`);
+      }else if(ext==='csv'){
+        const lines=content.split('\n');
+        const hdr=lines[0].toLowerCase().split(',').map(h=>h.trim().replace(/"/g,''));
+        const hi=hdr.indexOf('hook'),li=hdr.indexOf('lesson'),ti=hdr.indexOf('topic');
+        let n=0;lines.slice(1).forEach(line=>{
+          if(!line.trim())return;
+          const cols=parseCSV(line);
+          const hook=(hi>=0?cols[hi]:ti>=0?cols[ti]:cols[0]||'').replace(/"/g,'').trim();
+          const lesson=(li>=0?cols[li]||'':'').replace(/"/g,'').trim();
+          if(hook){addToQ({hook,lesson});n++;}
+        });
+        toast(`Imported ${n} rows from CSV`);
+      }else{
+        const lines=content.split('\n');let n=0;
+        lines.forEach(l=>{const i=parseLine(l);if(i){addToQ(i);n++;}});
+        toast(`Imported ${n} lines from TXT`);
+      }
+      updQ();
+    }catch(err){toast('Error reading file — check format');}
+  };
+  reader.readAsText(file);
+}
+
+function parseCSV(line){
+  const res=[];let cur='';let inQ=false;
+  for(let i=0;i<line.length;i++){
+    if(line[i]==='"'){inQ=!inQ;}
+    else if(line[i]===','&&!inQ){res.push(cur);cur='';}
+    else cur+=line[i];
+  }
+  res.push(cur);return res;
+}
+
+function dlTemplate(){
+  const csv=`hook,lesson,category,tone\n"I accidentally ran terraform destroy on production at 3am","Here's what it taught me about blast radius management","platform","satirical"\n"My AI model started charging consulting rates","Here's what it taught me about scope creep in autonomous systems","ai","satirical"\n`;
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='topics-template.csv';a.click();
+  toast('Template downloaded');
+}
+
+function renderBank(){
+  const grid=document.getElementById('bank-grid');updCounts();
+  if(!bank.length){grid.innerHTML='<div class="empty"><div class="empty-ico">📭</div><p>No posts saved yet.<br>Generate posts and hit <strong>Save to bank</strong>.</p></div>';return;}
+  grid.innerHTML='';
+  bank.forEach((e,i)=>{
+    const ds=new Date(e.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const c=document.createElement('div');c.className='bk-card';
+    c.innerHTML=`<div class="bk-img">${e.imageUrl?`<img src="${e.imageUrl}" alt="post image"/>`:`<div class="no-img">🖼</div>`}</div><div><div class="bk-body"><div class="bk-hook">${e.hook}</div><div class="bk-prev">${e.post}</div><div class="bk-meta"><span class="mc">${e.category}</span><span class="mc">${e.tone}</span><span class="mc">${ds}</span>${e.imageUrl?'<span class="mc">image</span>':''}</div></div><div class="bk-acts"><button onclick="cpBank(${i})">Copy post</button>${e.imageUrl?`<button onclick="cpImg(${i})">Image URL</button>`:''}<button onclick="delEntry(${i})" style="color:var(--color-text-danger);border-color:var(--color-border-danger)">Delete</button></div></div>`;
+    grid.appendChild(c);
+  });
+}
+function cpBank(i){navigator.clipboard.writeText(bank[i].post).then(()=>toast('Post copied'));}
+function cpImg(i){navigator.clipboard.writeText(bank[i].imageUrl).then(()=>toast('Image URL copied'));}
+function delEntry(i){bank.splice(i,1);localStorage.setItem('lpb',JSON.stringify(bank));renderBank();}
+function clearBank(){if(!confirm(`Delete all ${bank.length} saved posts?`))return;bank=[];localStorage.setItem('lpb',JSON.stringify(bank));renderBank();}
+
+function exportJSON(){
+  if(!bank.length){toast('No posts to export');return;}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(bank,null,2)],{type:'application/json'}));a.download=`post-bank-${Date.now()}.json`;a.click();toast('JSON exported');
+}
+function exportCSV(){
+  if(!bank.length){toast('No posts to export');return;}
+  const h=['id','hook','lesson','post','imageUrl','imageCredit','category','tone','savedAt'];
+  const rows=bank.map(e=>h.map(k=>`"${(e[k]||'').toString().replace(/"/g,'""')}"`).join(','));
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([[h.join(','),...rows].join('\n')],{type:'text/csv'}));a.download=`post-bank-${Date.now()}.csv`;a.click();toast('CSV exported');
+}
+
+updCounts();
+</script>
+</body>
+</html>
